@@ -4,5 +4,4 @@ langchain
 openai
 toml
 pandas
-json
 bs4
