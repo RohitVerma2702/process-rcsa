@@ -3,10 +3,10 @@ import openai
 import toml
 import streamlit as st
 
-secrets = toml.load("secrets.toml")
-openai.api_key = secrets["openai_api_key"]
+# secrets = toml.load("secrets.toml")
+# openai.api_key = secrets["openai_api_key"]
 
-# openai.api_key = st.secrets["openai_api_key"]
+openai.api_key = st.secrets["openai_api_key"]
 
 def generate_risks(process, num_risks, risk_category):
     # Define your JSON format separately
