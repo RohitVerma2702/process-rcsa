@@ -7,6 +7,7 @@ from PIL import Image
 import streamlit.components.v1 as components
 
 im = Image.open("./assets/images/RS-square-logo.jpeg")
+banner = Image.open("./assets/images/banner.jpg")
 
 st.set_page_config(
     layout="wide", page_title="RiskSpotlight - Process RCSA", page_icon=im
@@ -17,10 +18,12 @@ hide_streamlit_style = """
                 #MainMenu {visibility: hidden;}
                 footer {visibility: hidden;}
                 .embeddedAppMetaInfoBar_container__DxxL1 {visibility: hidden;}
+                # img {position: absolute; top: 0; left: 0;}
             </style>
             """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
+st.image(banner)
 st.title("Process RCSA - Risk Identification")
 
 col1, col2 = st.columns(2)
@@ -48,13 +51,14 @@ with col2:
 
 if clicked:
     if not process or not num_risks or not risk_category:
-        st.sidebar.warning("Please fill in all the information.")
+        st.warning("Please fill in all the information.")
 
     else:
         with st.spinner("Please wait..."):
             response = prompting.generate_risks(process, num_risks, risk_category)
 
             risks_output = response["choices"][0]["message"]["content"]
+            # print(response)
 
             # Parse the JSON response
             data = json.loads(risks_output)
@@ -64,7 +68,7 @@ if clicked:
             # Iterate through the extracted data
             risks = data["Risks"]
 
-            risk_table_rows = ""
+            risk_information_output = []
 
             for risk in risks:
                 risk_title = risk["Risk Title"]
@@ -72,29 +76,57 @@ if clicked:
 
                 final_response = prompting.generate_risk_information(risk_title, risk_category_name)
 
-                risk_table = final_response["choices"][0]["message"]["content"]
+                risk_info = final_response["choices"][0]["message"]["content"]
+                risk_data = json.loads(risk_info)
+                risk_information_output.append(risk_data)
 
-                risk_table_rows = risk_table_rows + risk_table
+            risk_info_data = {
+                "Risk Information": risk_information_output
+            }
 
+            risk_row = risk_info_data["Risk Information"]
+
+            table_rows = ""
+
+            for item in risk_row:
+                # Extract fields from the risk iteration
+                risk_title = item["Risk Title"]
+                description = item["Description"]
+                causes = ", ".join(item["Causes"])
+                financial_impacts = ", ".join(item["Financial Impacts"])
+                non_financial_impacts = ", ".join(item["Non-Financial Impacts"])
+                banking_example = item["Banking Example"]
+                risk_category = item["Risk Category"]
+                
+                # Create an HTML table row for the current risk iteration
+                table_row = f"""<tr><td>{risk_title}</td><td>{description}</td><td>{causes}</td><td>{financial_impacts}</td><td>{non_financial_impacts}</td><td>{banking_example}</td><td>{risk_category}</td></tr>"""
+
+                # Append the current table row to the table_rows string
+                table_rows += table_row
+
+            # Complete HTML table with headers and table rows
             html_before = """
             <table>
-                <tr style="background-color: #000; color: #fff; text-align: center;">
-                    <th>Risk Title</th>
-                    <th>Description</th>
-                    <th>Causes</th>
-                    <th>Financial Impacts</th>
-                    <th>Non-Financial Impacts</th>
-                    <th>Banking Example</th>
-                    <th>Risk Category</th>
-                </tr>
+                <thead>
+                    <tr style="background-color: #000; color: #fff; text-align: center;">
+                        <th>Risk Title</th>
+                        <th>Description</th>
+                        <th>Causes</th>
+                        <th>Financial Impacts</th>
+                        <th>Non-Financial Impacts</th>
+                        <th>Banking Example</th>
+                        <th>Risk Category</th>
+                    </tr>
+                </thead>
+                <tbody>
             """
 
-            html_after = """
+            html_after = """  
+                </tbody>
             </table>
             """
-
-            # Concatenate everything together
-            final_html = html_before + risk_table_rows + html_after
-
+            # print(table_rows)
+            final_html = html_before + table_rows + html_after
+            print(final_html)
             # Display the HTML table
             st.write(final_html, unsafe_allow_html=True)
