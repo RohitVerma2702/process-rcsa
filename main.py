@@ -23,21 +23,21 @@ hide_streamlit_style = """
             """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-st.image(banner)
+st.image(banner, use_column_width="always")
 st.title("Process RCSA - Risk Identification")
 
 col1, col2 = st.columns(2)
 
 with col1:
-    process = st.text_area("Please provide Process details.", value="", height=200)
+    process = st.text_area("Please provide process details.", value="", height=200)
     clicked = st.button("Submit")
 
 with col2:
     num_risks = st.number_input(
-        "Number of Risks...", min_value=3, max_value=10
+        "No. of risks", min_value=3, max_value=10
     )
     risk_category = st.multiselect(
-        "Please select Risk Categories.",
+        "Risk Categories",
         ["Business Process Execution Failures", 
         "Damage to Tangible and Intangible Assets",
         "Employment Practices and Workplace Safety",
