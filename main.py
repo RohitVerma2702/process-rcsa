@@ -7,7 +7,6 @@ from PIL import Image
 import streamlit.components.v1 as components
 
 im = Image.open("./assets/images/RS-square-logo.jpeg")
-# banner = Image.open("./assets/images/banner.jpg")
 
 st.set_page_config(
     layout="wide", page_title="RiskSpotlight - Process RCSA", page_icon=im
@@ -23,133 +22,109 @@ hide_streamlit_style = """
             """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-# st.image(banner, use_column_width="always")
+st.title("Process RCSA - Risk Identification")
 
-# Create an empty container
-placeholder = st.empty()
+col1, col2 = st.columns(2)
 
-actual_email = "rsgptai@riskspotlight.com"
-actual_password = "RSgpt_2023"
+with col1:
+    process = st.text_area("Please provide process details.", value="", height=200)
+    clicked = st.button("Submit")
 
-# Insert a form in the container
-with placeholder.form("login"):
-    st.markdown("#### Enter your credentials")
-    email = st.text_input("Email")
-    password = st.text_input("Password", type="password")
-    submit = st.form_submit_button("Login")
+with col2:
+    num_risks = st.number_input(
+        "No. of risks", min_value=3, max_value=10
+    )
+    risk_category = st.multiselect(
+        "Risk Categories",
+        ["Business Process Execution Failures", 
+        "Damage to Tangible and Intangible Assets",
+        "Employment Practices and Workplace Safety",
+        "External Theft & Fraud",
+        "Improper Business Practices",
+        "Internal Theft & Fraud",
+        "Regulatory & Compliance",
+        "Technology Failures & Damages",
+        "Vendor Failures & Damages"],
+    )
 
-if submit and email == actual_email and password == actual_password:
-    # If the form is submitted and the email and password are correct,
-    # clear the form/container and display a success message
-    placeholder.empty()
-    st.title("Process RCSA - Risk Identification")
+if clicked:
+    if not process or not num_risks or not risk_category:
+        st.warning("Please fill in all the information.")
 
-    col1, col2 = st.columns(2)
+    else:
+        with st.spinner("Please wait..."):
+            response = prompting.generate_risks(process, num_risks, risk_category)
 
-    with col1:
-        process = st.text_area("Please provide process details.", value="", height=200)
-        clicked = st.button("Submit")
+            risks_output = response["choices"][0]["message"]["content"]
+            # print(response)
 
-    with col2:
-        num_risks = st.number_input(
-            "No. of risks", min_value=3, max_value=10
-        )
-        risk_category = st.multiselect(
-            "Risk Categories",
-            ["Business Process Execution Failures", 
-            "Damage to Tangible and Intangible Assets",
-            "Employment Practices and Workplace Safety",
-            "External Theft & Fraud",
-            "Improper Business Practices",
-            "Internal Theft & Fraud",
-            "Regulatory & Compliance",
-            "Technology Failures & Damages",
-            "Vendor Failures & Damages"],
-        )
+            # Parse the JSON response
+            data = json.loads(risks_output)
+            # st.write(risks)
+            # st.write(data)
 
-    if clicked:
-        if not process or not num_risks or not risk_category:
-            st.warning("Please fill in all the information.")
+            # Iterate through the extracted data
+            risks = data["Risks"]
 
-        else:
-            with st.spinner("Please wait..."):
-                response = prompting.generate_risks(process, num_risks, risk_category)
+            risk_information_output = []
 
-                risks_output = response["choices"][0]["message"]["content"]
-                # print(response)
+            for risk in risks:
+                risk_title = risk["Risk Title"]
+                risk_category_name = risk["Risk Category"]
 
-                # Parse the JSON response
-                data = json.loads(risks_output)
-                # st.write(risks)
-                # st.write(data)
+                final_response = prompting.generate_risk_information(risk_title, risk_category_name)
 
-                # Iterate through the extracted data
-                risks = data["Risks"]
+                risk_info = final_response["choices"][0]["message"]["content"]
+                risk_data = json.loads(risk_info)
+                risk_information_output.append(risk_data)
 
-                risk_information_output = []
+            risk_info_data = {
+                "Risk Information": risk_information_output
+            }
 
-                for risk in risks:
-                    risk_title = risk["Risk Title"]
-                    risk_category_name = risk["Risk Category"]
+            risk_row = risk_info_data["Risk Information"]
 
-                    final_response = prompting.generate_risk_information(risk_title, risk_category_name)
+            table_rows = ""
 
-                    risk_info = final_response["choices"][0]["message"]["content"]
-                    risk_data = json.loads(risk_info)
-                    risk_information_output.append(risk_data)
+            for item in risk_row:
+                # Extract fields from the risk iteration
+                risk_title = item["Risk Title"]
+                description = item["Description"]
+                causes = ", ".join(item["Causes"])
+                financial_impacts = ", ".join(item["Financial Impacts"])
+                non_financial_impacts = ", ".join(item["Non-Financial Impacts"])
+                banking_example = item["Banking Example"]
+                risk_category = item["Risk Category"]
+                
+                # Create an HTML table row for the current risk iteration
+                table_row = f"""<tr><td>{risk_title}</td><td>{description}</td><td>{causes}</td><td>{financial_impacts}</td><td>{non_financial_impacts}</td><td>{banking_example}</td><td>{risk_category}</td></tr>"""
 
-                risk_info_data = {
-                    "Risk Information": risk_information_output
-                }
+                # Append the current table row to the table_rows string
+                table_rows += table_row
 
-                risk_row = risk_info_data["Risk Information"]
+            # Complete HTML table with headers and table rows
+            html_before = """
+            <table>
+                <thead>
+                    <tr style="background-color: #000; color: #fff; text-align: center;">
+                        <th>Risk Title</th>
+                        <th>Description</th>
+                        <th>Causes</th>
+                        <th>Financial Impacts</th>
+                        <th>Non-Financial Impacts</th>
+                        <th>Banking Example</th>
+                        <th>Risk Category</th>
+                    </tr>
+                </thead>
+                <tbody>
+            """
 
-                table_rows = ""
-
-                for item in risk_row:
-                    # Extract fields from the risk iteration
-                    risk_title = item["Risk Title"]
-                    description = item["Description"]
-                    causes = ", ".join(item["Causes"])
-                    financial_impacts = ", ".join(item["Financial Impacts"])
-                    non_financial_impacts = ", ".join(item["Non-Financial Impacts"])
-                    banking_example = item["Banking Example"]
-                    risk_category = item["Risk Category"]
-                    
-                    # Create an HTML table row for the current risk iteration
-                    table_row = f"""<tr><td>{risk_title}</td><td>{description}</td><td>{causes}</td><td>{financial_impacts}</td><td>{non_financial_impacts}</td><td>{banking_example}</td><td>{risk_category}</td></tr>"""
-
-                    # Append the current table row to the table_rows string
-                    table_rows += table_row
-
-                # Complete HTML table with headers and table rows
-                html_before = """
-                <table>
-                    <thead>
-                        <tr style="background-color: #000; color: #fff; text-align: center;">
-                            <th>Risk Title</th>
-                            <th>Description</th>
-                            <th>Causes</th>
-                            <th>Financial Impacts</th>
-                            <th>Non-Financial Impacts</th>
-                            <th>Banking Example</th>
-                            <th>Risk Category</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                """
-
-                html_after = """  
-                    </tbody>
-                </table>
-                """
-                # print(table_rows)
-                final_html = html_before + table_rows + html_after
-                print(final_html)
-                # Display the HTML table
-                st.write(final_html, unsafe_allow_html=True)
-    # st.success("Login successful")
-elif submit and email != actual_email and password != actual_password:
-    st.error("Login failed")
-else:
-    pass
+            html_after = """  
+                </tbody>
+            </table>
+            """
+            # print(table_rows)
+            final_html = html_before + table_rows + html_after
+            print(final_html)
+            # Display the HTML table
+            st.write(final_html, unsafe_allow_html=True)
