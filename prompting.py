@@ -40,6 +40,12 @@ def generate_risks(process, num_risks, risk_category):
 
     # Use the JSON format variable in your risk_titles string
     risk_titles = f"""As an Operational Risk expert, please provide "{num_risks}" risks associated with the process of "{process}". Categorize these risks into the following categories: "{risk_category}".
+    Please use the below instructions to provide the output: 
+    - Risk Title should at least have 8-12 words and provide a detailed understanding of the main event that may occur and it refers to a specific risk
+    - Avoid mentioning risk in generic way such as "Geopolitical Risks", "Vendor Dependency"
+    - Every title should have a verb which should highlight the main event that could occur
+    - Use the words and terms from the Process context in the Risk Title where possible
+    - Make sure to NOT use Financial Risks, I do not need any financial risk titles.
 
     Present the information in the following JSON format:
     {json_format}
@@ -63,7 +69,7 @@ def generate_risk_information(risk_title, risk_category_name):
 
     json_format2 = '''
     {
-        "Risk Title": "The number of words in the risk title should be between 8 to 15 words and should always contain a word associated with threat or a negative event.",
+        "Risk Title": "Title of the Risk from above.",
         "Description": "Provide a detailed description between 30 to 75 words. Description should contain details of how the risk can occur.",
         "Causes": ["List the key causes as bullet points."],
         "Financial Impacts": ["List the key financial impacts as bullet points."],

@@ -90,14 +90,26 @@ if clicked:
                 # Extract fields from the risk iteration
                 risk_title = item["Risk Title"]
                 description = item["Description"]
-                causes = ", ".join(item["Causes"])
-                financial_impacts = ", ".join(item["Financial Impacts"])
-                non_financial_impacts = ", ".join(item["Non-Financial Impacts"])
+                # causes = ", ".join(item["Causes"])
+                # financial_impacts = ", ".join(item["Financial Impacts"])
+                # non_financial_impacts = ", ".join(item["Non-Financial Impacts"])
                 banking_example = item["Banking Example"]
                 risk_category = item["Risk Category"]
+
+                causes = ""
+                for cause in item["Causes"]:
+                    causes += f"""<li>{cause}</li>"""
+                
+                financial_impacts = ""
+                for financial_impact in item["Financial Impacts"]:
+                    financial_impacts += f"""<li>{financial_impact}</li>"""
+
+                non_financial_impacts = ""
+                for non_financial_impact in item["Non-Financial Impacts"]:
+                    non_financial_impacts += f"""<li>{non_financial_impact}</li>"""
                 
                 # Create an HTML table row for the current risk iteration
-                table_row = f"""<tr><td>{risk_title}</td><td>{description}</td><td>{causes}</td><td>{financial_impacts}</td><td>{non_financial_impacts}</td><td>{banking_example}</td><td>{risk_category}</td></tr>"""
+                table_row = f"""<tr><td>{risk_category}</td><td>{risk_title}</td><td>{description}</td><td><ul>{causes}</ul></td><td><ul>{financial_impacts}</ul></td><td><ul>{non_financial_impacts}</ul></td><td>{banking_example}</td></tr>"""
 
                 # Append the current table row to the table_rows string
                 table_rows += table_row
@@ -107,13 +119,13 @@ if clicked:
             <table>
                 <thead>
                     <tr style="background-color: #000; color: #fff; text-align: center;">
+                        <th>Risk Category</th>
                         <th>Risk Title</th>
                         <th>Description</th>
                         <th>Causes</th>
                         <th>Financial Impacts</th>
                         <th>Non-Financial Impacts</th>
                         <th>Banking Example</th>
-                        <th>Risk Category</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -125,6 +137,6 @@ if clicked:
             """
             # print(table_rows)
             final_html = html_before + table_rows + html_after
-            print(final_html)
+            # print(final_html)
             # Display the HTML table
             st.write(final_html, unsafe_allow_html=True)
