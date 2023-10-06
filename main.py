@@ -7,7 +7,7 @@ from PIL import Image
 import streamlit.components.v1 as components
 
 im = Image.open("./assets/images/RS-square-logo.jpeg")
-banner = Image.open("./assets/images/banner.jpg")
+# banner = Image.open("./assets/images/banner.jpg")
 
 st.set_page_config(
     layout="wide", page_title="RiskSpotlight - Process RCSA", page_icon=im
@@ -23,7 +23,8 @@ hide_streamlit_style = """
             """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-st.image(banner, use_column_width="always")
+# st.image(banner, use_column_width="always")
+
 st.title("Process RCSA - Risk Identification")
 
 col1, col2 = st.columns(2)
